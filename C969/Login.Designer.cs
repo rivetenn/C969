@@ -217,6 +217,7 @@ namespace C969
             LanguageBox.Items.AddRange(new object[] { "English", "Japanese" });
             LanguageBox.SelectedIndex = 0; 
             LanguageBox.SelectedIndexChanged += LanguageBox_Changed;
+
         }
     }
 }

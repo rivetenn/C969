@@ -1,6 +1,6 @@
 ﻿namespace C969
 {
-    partial class MainForm
+    partial class Records
     {
         /// <summary>
         /// Required designer variable.
@@ -20,33 +20,29 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
+        private void AddB_Click(object sender, EventArgs e)
         {
-            SuspendLayout();
-            // 
-            // MainForm
-            // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
-            Name = "MainForm";
-            Text = "Home";
-            Load += StartUp;
-            ResumeLayout(false);
+            // Code to handle adding an item
         }
-
-        #endregion
-
-
+        private void DeleteB_Click(object sender, EventArgs e)
+        {
+            // Code to handle deleting an item
+        }
+        private void UpdateD_Click(object sender, EventArgs e)
+        {
+            // Code to handle updating an item
+        }
 
         private void StartUp(object sender, EventArgs e)
         {
+            AddB.Click += AddB_Click;
+            DeleteB.Click += DeleteB_Click;
+            UpdateB.Click += UpdateD_Click;
         }
+
+        private Button AddB;
+        private Button UpdateB;
+        private Button DeleteB;
+        private DataGridView SqlDataView;
     }
 }
