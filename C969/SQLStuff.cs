@@ -31,7 +31,7 @@ namespace C969
             }
         }
 
-        //public static bool AddCustomer;
+        public static bool AddCustomer;
 
 
     }

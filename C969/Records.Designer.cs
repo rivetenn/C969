@@ -44,5 +44,10 @@
         private Button UpdateB;
         private Button DeleteB;
         private DataGridView SqlDataView;
+        private Label NameL;
+        private Label PhoneL;
+        private TextBox NameBox;
+        private TextBox AddressBox;
+        private TextBox PhoneBox;
     }
 }

@@ -34,7 +34,7 @@ namespace C969
         }
 
     static void LoginTracker(string iuser)
-        {
+        {   
             string projectRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
             string logDir = Path.Combine(projectRoot, "Logs");
             Directory.CreateDirectory(logDir);
@@ -45,5 +45,6 @@ namespace C969
                 writer.WriteLine($"{iuser} has logged in at {DateTime.Now}");
             }
         }
+        
     }
 }
