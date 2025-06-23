@@ -9,24 +9,27 @@ namespace C969
 {
     public class CustomerData
     {
-        required public string Name { get; set; }
-        required public string Address { get; set; }
-        required public string Phone { get; set; }
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Address2 { get; set; }
+        public string City { get; set; }
+        public string Country { get; set; }
+        public string PostalCode { get; set; }
+        public string Phone { get; set; }
 
-       CustomerData(string name, string address, string phone)
+
+        public CustomerData(string name, string address1, string phone, string city = "", string country = "", string postalCode = "", string address2 = "")
         {
-            try
-            {
-                phone = CheckP(phone);
-                CheckIfEmpty(new string[] { name, address, phone });
-                Name = name.Trim();
-                Address = address.Trim();
-                Phone = phone.Trim();
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Invalid Data");
-            }
+            CheckIfEmpty(new string[] { name, address1, phone });
+            phone = CheckP(phone);
+            Name = name.Trim();
+            Address = address1.Trim();
+            Phone = phone.Trim();
+            City = city.Trim();
+            Country = country.Trim();
+            PostalCode = postalCode.Trim();
+            Address2 = address2.Trim();
+
         }
 
 
@@ -63,6 +66,8 @@ namespace C969
         }
         private static void CheckIfEmpty(string[] values)
         {
+            if (values == null || values.Length == 0)
+                throw new ArgumentException("Invalid Input");
             foreach (var value in values)
             {
                 if (string.IsNullOrWhiteSpace(value))
