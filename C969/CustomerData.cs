@@ -17,6 +17,8 @@ namespace C969
         public string PostalCode { get; set; }
         public string Phone { get; set; }
 
+        public int? CustId { get; set; }
+
 
         public CustomerData(string name, string address1, string phone, string city = "", string country = "", string postalCode = "", string address2 = "")
         {
@@ -29,7 +31,6 @@ namespace C969
             Country = country.Trim();
             PostalCode = postalCode.Trim();
             Address2 = address2.Trim();
-
         }
 
 

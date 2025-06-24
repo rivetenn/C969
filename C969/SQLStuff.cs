@@ -43,7 +43,7 @@ namespace C969
         public static void UpdateDataH()
         {
             DataHolder.Clear();
-            string SQLq = @"SELECT c.customerName, a.address, a.address2, a.postalCode, a.phone, ci.city, co.country
+            string SQLq = @"SELECT c.customerId, c.customerName, a.address, a.address2, a.postalCode, a.phone, ci.city, co.country
                 FROM customer c
                 JOIN address a ON c.addressId = a.addressId
                 JOIN city ci ON a.cityId = ci.cityId
@@ -56,6 +56,7 @@ namespace C969
                 {
                     while (reader.Read())
                     {
+                        int custid = reader.GetInt32("customerId");
                         string name = reader.GetString("customerName");
                         string address = reader.GetString("address");
                         string phone = reader.GetString("phone");
@@ -64,7 +65,7 @@ namespace C969
                         string country = reader.GetString("country");
                         string postal = reader.GetString("postalCode");
 
-                        DataHolder.Add(new CustomerData(name, address, phone, city, country, postal, address2));
+                        DataHolder.Add(new CustomerData(name, address, phone, city, country, postal, address2) { CustId = custid });
                     }
                 }
             }
@@ -163,8 +164,75 @@ namespace C969
 
         public static void DeleteCustomer(CustomerData obj)
         {
+            if (obj.CustId == null) throw new Exception("Customer ID is null");
+            using (MySqlConnection con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                using (MySqlTransaction tx = con.BeginTransaction())
+                {
+                    try
+                    {
+                        string query = "DELETE FROM customer WHERE customerId = @id";
+                        MySqlCommand cmd = new MySqlCommand(query, con);
+                        cmd.Parameters.AddWithValue("@id", obj.CustId.Value);
+                        cmd.ExecuteNonQuery();
+                        tx.Commit();
+                        UpdateDataH();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed to delete customer: " + ex.Message);
+                        tx.Rollback();
+                        return;
+                    }
+                }
+            }
 
         }
+
+        public static void UpdateCustomer(CustomerData obj)
+        {
+            if (obj.CustId == null) throw new Exception("Customer ID is null");
+            using (MySqlConnection con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                using (MySqlTransaction tx = con.BeginTransaction())
+                {
+                    try
+                    {
+                        string query = @"UPDATE customer c
+                            JOIN address a ON c.addressId = a.addressId
+                            JOIN city ci ON a.cityId = ci.cityId
+                            JOIN country co ON ci.countryId = co.countryId
+                            SET c.customerName = @name, a.address = @address, a.address2 = @address2, a.postalCode = @postal, a.phone = @phone, ci.city = @city, co.country = @country, c.lastUpdateBy = @user, a.lastUpdateBy = @user, ci.lastUpdateBy = @user, co.lastUpdateBy = @user
+                            WHERE c.customerId = @id";
+                        MySqlCommand customerCmd = new MySqlCommand(query, con);
+                        customerCmd.Parameters.AddWithValue("@name", obj.Name);
+                        customerCmd.Parameters.AddWithValue("@address", obj.Address);
+                        customerCmd.Parameters.AddWithValue("@address2", obj.Address2);
+                        customerCmd.Parameters.AddWithValue("@postal", obj.PostalCode);
+                        customerCmd.Parameters.AddWithValue("@phone", obj.Phone);
+                        customerCmd.Parameters.AddWithValue("@city", obj.City);
+                        customerCmd.Parameters.AddWithValue("@country", obj.Country);
+                        customerCmd.Parameters.AddWithValue("@user", WhoL);
+                        customerCmd.Parameters.AddWithValue("@id", obj.CustId.Value);
+                        customerCmd.ExecuteNonQuery();
+                        tx.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Failed to update customer: " + ex.Message);
+                        tx.Rollback();
+                        return;
+                    }
+                }
+            }
+
+
+
+            UpdateDataH();
+        }
+
 
     }
 }

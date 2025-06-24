@@ -48,6 +48,7 @@ namespace C969
             ZipBox = new TextBox();
             Addres2Box = new TextBox();
             label3 = new Label();
+            ClearB = new Button();
             ((System.ComponentModel.ISupportInitialize)SqlDataView).BeginInit();
             SuspendLayout();
             // 
@@ -198,11 +199,21 @@ namespace C969
             label3.TabIndex = 17;
             label3.Text = "Address 2";
             // 
+            // ClearB
+            // 
+            ClearB.Location = new Point(276, 401);
+            ClearB.Name = "ClearB";
+            ClearB.Size = new Size(75, 23);
+            ClearB.TabIndex = 18;
+            ClearB.Text = "Clear";
+            ClearB.UseVisualStyleBackColor = true;
+            // 
             // Records
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(505, 450);
+            Controls.Add(ClearB);
             Controls.Add(label3);
             Controls.Add(Addres2Box);
             Controls.Add(ZipBox);
@@ -249,11 +260,50 @@ namespace C969
         }
         private void DeleteB_Click(object sender, EventArgs e)
         {
-            // Code to handle deleting an item
+            if (SqlDataView.SelectedRows.Count > 0)
+            {
+                int crustomer = SqlDataView.SelectedRows[0].Index;
+                CustomerData custId = SQLStuff.DataHolder[crustomer];
+                if (custId.CustId.HasValue)
+                {
+                    SQLStuff.DeleteCustomer(custId);
+                    ClearTextBoxes();
+                }
+            }
         }
         private void UpdateD_Click(object sender, EventArgs e)
         {
-            // Code to handle updating an item
+            if (SqlDataView.SelectedRows.Count > 0)
+            {
+                int crustomer = SqlDataView.SelectedRows[0].Index;
+                CustomerData custId = SQLStuff.DataHolder[crustomer];
+                if (custId.CustId.HasValue)
+                {
+                    SQLStuff.UpdateCustomer(custId);
+                    ClearTextBoxes();
+                }
+            }
+        }
+
+        private void ClearB_Click(object sender, EventArgs e)
+        {
+            ClearTextBoxes();
+        }
+
+        private void Selectedthis(object sender, DataGridViewCellEventArgs e)
+        {
+            if (SqlDataView.SelectedRows.Count > 0)
+            {
+                int num = SqlDataView.SelectedRows[0].Index;
+                CustomerData toboxes = SQLStuff.DataHolder[num];
+                NameBox.Text = toboxes.Name;
+                PhoneBox.Text = toboxes.Phone;
+                AddressBox.Text = toboxes.Address;
+                CountryBox.Text = toboxes.Country;
+                CityBox.Text = toboxes.City;
+                ZipBox.Text = toboxes.PostalCode;
+                Addres2Box.Text = toboxes.Address2;
+            }
         }
 
         private void StartUp(object sender, EventArgs e)
@@ -261,8 +311,13 @@ namespace C969
             AddB.Click += AddB_Click;
             DeleteB.Click += DeleteB_Click;
             UpdateB.Click += UpdateD_Click;
+            ClearB.Click += ClearB_Click;
             SQLStuff.UpdateDataH();
             SqlDataView.DataSource = SQLStuff.DataHolder;
+            SqlDataView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            SqlDataView.Columns["CustId"].Visible = false;
+            SqlDataView.MultiSelect = false;
+            SqlDataView.CellClick += Selectedthis;
         }
 
         private void ClearTextBoxes()
@@ -293,5 +348,6 @@ namespace C969
         private TextBox ZipBox;
         private TextBox Addres2Box;
         private Label label3;
+        private Button ClearB;
     }
 }
