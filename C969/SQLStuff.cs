@@ -222,6 +222,14 @@ namespace C969
                         string q = @"UPDATE customer 
                              SET customerName = @name, lastUpdateBy = @user, lastUpdate = NOW() 
                              WHERE customerId = @id";
+                        int addressId = 0;
+                        string getAddressId = "SELECT addressId FROM customer WHERE customerId = @id";
+                        using (var cmd = new MySqlCommand(getAddressId, con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@id", obj.CustId.Value);
+                            var result = cmd.ExecuteScalar();
+                            addressId = Convert.ToInt32(result);
+                        }
 
                         using (var cmd = new MySqlCommand(q, con, tx))
                         {
@@ -230,9 +238,21 @@ namespace C969
                             cmd.Parameters.AddWithValue("@id", obj.CustId);
                             Debug.WriteLine(obj.CustId.Value);
                             int affected = cmd.ExecuteNonQuery();
-                            Debug.WriteLine($"Rows affected: {affected}");
-                            Debug.WriteLine("Connected to DB: " + con.Database);
                             Debug.WriteLine($"New Name: {obj.Name}");
+                        }
+
+                        q = @"UPDATE address 
+                      SET address = @address, address2 = @address2, postalCode = @postal, phone = @phone, lastUpdateBy = @user 
+                      WHERE addressId = @aid";
+                        using (var cmd = new MySqlCommand(q, con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@address", obj.Address);
+                            cmd.Parameters.AddWithValue("@address2", obj.Address2);
+                            cmd.Parameters.AddWithValue("@postal", obj.PostalCode);
+                            cmd.Parameters.AddWithValue("@phone", obj.Phone);
+                            cmd.Parameters.AddWithValue("@user", WhoL);
+                            cmd.Parameters.AddWithValue("@aid", addressId);
+                            cmd.ExecuteNonQuery();
                         }
 
                         tx.Commit();
