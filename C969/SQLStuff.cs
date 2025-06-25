@@ -218,31 +218,76 @@ namespace C969
                 {
                     try
                     {
-                        Debug.WriteLine("Updating customer: ");
-                        string q = @"UPDATE customer 
-                             SET customerName = @name, lastUpdateBy = @user, lastUpdate = NOW() 
-                             WHERE customerId = @id";
                         int addressId = 0;
-                        string getAddressId = "SELECT addressId FROM customer WHERE customerId = @id";
-                        using (var cmd = new MySqlCommand(getAddressId, con, tx))
+                        int cityId = 0;
+                        int countryId = 0;
+
+                        string q = @"SELECT a.addressId
+                             FROM customer cu
+                             JOIN address a ON cu.addressId = a.addressId
+                             WHERE cu.customerId = @id";
+                        using (var cmd = new MySqlCommand(q, con, tx))
                         {
                             cmd.Parameters.AddWithValue("@id", obj.CustId.Value);
-                            var result = cmd.ExecuteScalar();
-                            addressId = Convert.ToInt32(result);
+                            addressId = Convert.ToInt32(cmd.ExecuteScalar());
                         }
 
+                        q = "SELECT countryId FROM country WHERE country = @country";
+                        using (var cmd = new MySqlCommand(q, con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@country", obj.Country);
+                            var result = cmd.ExecuteScalar();
+                            if (result != null)
+                            {
+                                countryId = Convert.ToInt32(result);
+                            }
+                            else
+                            {
+                                q = "INSERT INTO country (country, createDate, createdBy, lastUpdateBy) VALUES (@country, NOW(), @user, @user)";
+                                using (var insert = new MySqlCommand(q, con, tx))
+                                {
+                                    insert.Parameters.AddWithValue("@country", obj.Country);
+                                    insert.Parameters.AddWithValue("@user", WhoL);
+                                    insert.ExecuteNonQuery();
+                                    countryId = (int)insert.LastInsertedId;
+                                }
+                            }
+                        }
+                        q = "SELECT cityId FROM city WHERE city = @city AND countryId = @countryId";
+                        using (var cmd = new MySqlCommand(q, con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@city", obj.City);
+                            cmd.Parameters.AddWithValue("@countryId", countryId);
+                            var result = cmd.ExecuteScalar();
+                            if (result != null)
+                            {
+                                cityId = Convert.ToInt32(result);
+                            }
+                            else
+                            {
+                                q = "INSERT INTO city (city, countryId, createDate, createdBy, lastUpdateBy) VALUES (@city, @countryId, NOW(), @user, @user)";
+                                using (var insert = new MySqlCommand(q, con, tx))
+                                {
+                                    insert.Parameters.AddWithValue("@city", obj.City);
+                                    insert.Parameters.AddWithValue("@countryId", countryId);
+                                    insert.Parameters.AddWithValue("@user", WhoL);
+                                    insert.ExecuteNonQuery();
+                                    cityId = (int)insert.LastInsertedId;
+                                }
+                            }
+                        }
+                        q = @"UPDATE customer 
+                      SET customerName = @name, lastUpdateBy = @user, lastUpdate = NOW() 
+                      WHERE customerId = @id";
                         using (var cmd = new MySqlCommand(q, con, tx))
                         {
                             cmd.Parameters.AddWithValue("@name", obj.Name);
                             cmd.Parameters.AddWithValue("@user", WhoL);
                             cmd.Parameters.AddWithValue("@id", obj.CustId);
-                            Debug.WriteLine(obj.CustId.Value);
-                            int affected = cmd.ExecuteNonQuery();
-                            Debug.WriteLine($"New Name: {obj.Name}");
+                            cmd.ExecuteNonQuery();
                         }
-
                         q = @"UPDATE address 
-                      SET address = @address, address2 = @address2, postalCode = @postal, phone = @phone, lastUpdateBy = @user 
+                      SET address = @address, address2 = @address2, postalCode = @postal, phone = @phone, cityId = @cityId, lastUpdateBy = @user 
                       WHERE addressId = @aid";
                         using (var cmd = new MySqlCommand(q, con, tx))
                         {
@@ -252,23 +297,20 @@ namespace C969
                             cmd.Parameters.AddWithValue("@phone", obj.Phone);
                             cmd.Parameters.AddWithValue("@user", WhoL);
                             cmd.Parameters.AddWithValue("@aid", addressId);
+                            cmd.Parameters.AddWithValue("@cityId", cityId);
                             cmd.ExecuteNonQuery();
                         }
 
                         tx.Commit();
-                        Debug.WriteLine("Finished");
+                        UpdateDataH();
                     }
                     catch (Exception ex)
                     {
                         tx.Rollback();
                         MessageBox.Show("Failed to update customer: " + ex.Message);
-                        return;
                     }
                 }
-                UpdateDataH();
             }
-
-
         }
 
 
