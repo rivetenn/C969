@@ -29,6 +29,11 @@
         private void InitializeComponent()
         {
             ManageB = new Button();
+            AppointB = new Button();
+            JustData = new DataGridView();
+            Calendar = new DataGridView();
+            ((System.ComponentModel.ISupportInitialize)JustData).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)Calendar).BeginInit();
             SuspendLayout();
             // 
             // ManageB
@@ -40,15 +45,45 @@
             ManageB.Text = "Manage ";
             ManageB.UseVisualStyleBackColor = true;
             // 
+            // AppointB
+            // 
+            AppointB.Location = new Point(47, 185);
+            AppointB.Name = "AppointB";
+            AppointB.Size = new Size(75, 23);
+            AppointB.TabIndex = 12;
+            AppointB.Text = "Schedule";
+            AppointB.UseVisualStyleBackColor = true;
+            // 
+            // JustData
+            // 
+            JustData.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            JustData.Location = new Point(234, 288);
+            JustData.Name = "JustData";
+            JustData.Size = new Size(554, 150);
+            JustData.TabIndex = 13;
+            // 
+            // Calendar
+            // 
+            Calendar.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            Calendar.Location = new Point(234, 40);
+            Calendar.Name = "Calendar";
+            Calendar.Size = new Size(554, 242);
+            Calendar.TabIndex = 14;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(Calendar);
+            Controls.Add(JustData);
+            Controls.Add(AppointB);
             Controls.Add(ManageB);
             Name = "MainForm";
             Text = "Home";
             Load += StartUp;
+            ((System.ComponentModel.ISupportInitialize)JustData).EndInit();
+            ((System.ComponentModel.ISupportInitialize)Calendar).EndInit();
             ResumeLayout(false);
         }
 
@@ -65,5 +100,9 @@
             ManageB.Click += ManageB_Click;
         }
         private Button ManageB;
+        private Button AppointB;
+        private MonthCalendar monthCalendar1;
+        private DataGridView JustData;
+        private DataGridView Calendar;
     }
 }

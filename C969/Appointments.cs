@@ -10,21 +10,11 @@ using System.Windows.Forms;
 
 namespace C969
 {
-    public partial class MainForm : Form
+    public partial class Appointments : Form
     {
-        public MainForm()
+        public Appointments()
         {
             InitializeComponent();
-        }
-
-        private void Calendar_DateChanged(object sender, DateRangeEventArgs e)
-        {
-
-        }
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }

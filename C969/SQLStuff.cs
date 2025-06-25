@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -172,10 +173,26 @@ namespace C969
                 {
                     try
                     {
-                        string query = "DELETE FROM customer WHERE customerId = @id";
-                        MySqlCommand cmd = new MySqlCommand(query, con);
-                        cmd.Parameters.AddWithValue("@id", obj.CustId.Value);
-                        cmd.ExecuteNonQuery();
+                        int addressId = 0;
+                        string getAddressId = "SELECT addressId FROM customer WHERE customerId = @id";
+                        using (var getth = new MySqlCommand(getAddressId, con, tx))
+                        {
+                            getth.Parameters.AddWithValue("@id", obj.CustId.Value);
+                            var result = getth.ExecuteScalar();
+                            addressId = Convert.ToInt32(result);
+                        }
+                        string deleteCustomer = "DELETE FROM customer WHERE customerId = @id";
+                        using (var delq = new MySqlCommand(deleteCustomer, con, tx))
+                        {
+                            delq.Parameters.AddWithValue("@id", obj.CustId.Value);
+                            delq.ExecuteNonQuery();
+                        }
+                        string deleteAddress = "DELETE FROM address WHERE addressId = @aid";
+                        using (var delq = new MySqlCommand(deleteAddress, con, tx))
+                        {
+                            delq.Parameters.AddWithValue("@aid", addressId);
+                            delq.ExecuteNonQuery();
+                        }
                         tx.Commit();
                         UpdateDataH();
                     }
@@ -193,6 +210,7 @@ namespace C969
         public static void UpdateCustomer(CustomerData obj)
         {
             if (obj.CustId == null) throw new Exception("Customer ID is null");
+
             using (MySqlConnection con = new MySqlConnection(MSQL))
             {
                 con.Open();
@@ -200,37 +218,37 @@ namespace C969
                 {
                     try
                     {
-                        string query = @"UPDATE customer c
-                            JOIN address a ON c.addressId = a.addressId
-                            JOIN city ci ON a.cityId = ci.cityId
-                            JOIN country co ON ci.countryId = co.countryId
-                            SET c.customerName = @name, a.address = @address, a.address2 = @address2, a.postalCode = @postal, a.phone = @phone, ci.city = @city, co.country = @country, c.lastUpdateBy = @user, a.lastUpdateBy = @user, ci.lastUpdateBy = @user, co.lastUpdateBy = @user
-                            WHERE c.customerId = @id";
-                        MySqlCommand customerCmd = new MySqlCommand(query, con);
-                        customerCmd.Parameters.AddWithValue("@name", obj.Name);
-                        customerCmd.Parameters.AddWithValue("@address", obj.Address);
-                        customerCmd.Parameters.AddWithValue("@address2", obj.Address2);
-                        customerCmd.Parameters.AddWithValue("@postal", obj.PostalCode);
-                        customerCmd.Parameters.AddWithValue("@phone", obj.Phone);
-                        customerCmd.Parameters.AddWithValue("@city", obj.City);
-                        customerCmd.Parameters.AddWithValue("@country", obj.Country);
-                        customerCmd.Parameters.AddWithValue("@user", WhoL);
-                        customerCmd.Parameters.AddWithValue("@id", obj.CustId.Value);
-                        customerCmd.ExecuteNonQuery();
+                        Debug.WriteLine("Updating customer: ");
+                        string q = @"UPDATE customer 
+                             SET customerName = @name, lastUpdateBy = @user, lastUpdate = NOW() 
+                             WHERE customerId = @id";
+
+                        using (var cmd = new MySqlCommand(q, con, tx))
+                        {
+                            cmd.Parameters.AddWithValue("@name", obj.Name);
+                            cmd.Parameters.AddWithValue("@user", WhoL);
+                            cmd.Parameters.AddWithValue("@id", obj.CustId);
+                            Debug.WriteLine(obj.CustId.Value);
+                            int affected = cmd.ExecuteNonQuery();
+                            Debug.WriteLine($"Rows affected: {affected}");
+                            Debug.WriteLine("Connected to DB: " + con.Database);
+                            Debug.WriteLine($"New Name: {obj.Name}");
+                        }
+
                         tx.Commit();
+                        Debug.WriteLine("Finished");
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Failed to update customer: " + ex.Message);
                         tx.Rollback();
+                        MessageBox.Show("Failed to update customer: " + ex.Message);
                         return;
                     }
                 }
+                UpdateDataH();
             }
 
 
-
-            UpdateDataH();
         }
 
 

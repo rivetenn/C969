@@ -1,4 +1,5 @@
-﻿using Mysqlx.Crud;
+﻿using System.Diagnostics;
+using Mysqlx.Crud;
 
 namespace C969
 {
@@ -248,7 +249,7 @@ namespace C969
             try
             {
                 CustomerData newCustomer = new CustomerData(NameBox.Text, AddressBox.Text, PhoneBox.Text,  
-                    CountryBox.Text, CityBox.Text, ZipBox.Text, Addres2Box.Text);
+                   CityBox.Text, CountryBox.Text, ZipBox.Text, Addres2Box.Text);
                 SQLStuff.AddCustomer(newCustomer);
                 SQLStuff.UpdateDataH();
                 ClearTextBoxes();
@@ -279,6 +280,15 @@ namespace C969
                 CustomerData custId = SQLStuff.DataHolder[crustomer];
                 if (custId.CustId.HasValue)
                 {
+                    custId.Name = NameBox.Text;
+                    custId.Phone = PhoneBox.Text;
+                    custId.Address = AddressBox.Text;
+                    custId.Address2 = Addres2Box.Text;
+                    custId.City = CityBox.Text;
+                    custId.Country = CountryBox.Text;
+                    custId.PostalCode = ZipBox.Text;
+
+                    Debug.WriteLine("Working");
                     SQLStuff.UpdateCustomer(custId);
                     ClearTextBoxes();
                 }
@@ -318,6 +328,7 @@ namespace C969
             SqlDataView.Columns["CustId"].Visible = false;
             SqlDataView.MultiSelect = false;
             SqlDataView.CellClick += Selectedthis;
+            SqlDataView.ReadOnly = true;
         }
 
         private void ClearTextBoxes()

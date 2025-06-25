@@ -8,23 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace C969
+namespace C969.Misc
 {
-    public partial class MainForm : Form
+    public partial class Month : UserControl
     {
-        public MainForm()
+        public Month()
         {
             InitializeComponent();
-        }
-
-        private void Calendar_DateChanged(object sender, DateRangeEventArgs e)
-        {
-
-        }
-
-        private void label5_Click(object sender, EventArgs e)
-        {
-
         }
     }
 }
