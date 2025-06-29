@@ -94,10 +94,17 @@
             records.ShowDialog();
         }
 
+        void AppointB_Click(object sender, EventArgs e)
+        {
+            Appointments schedule = new Appointments();
+            schedule.ShowDialog();
+        }
+
 
         private void StartUp(object sender, EventArgs e)
         {
             ManageB.Click += ManageB_Click;
+            AppointB.Click += AppointB_Click;
         }
         private Button ManageB;
         private Button AppointB;

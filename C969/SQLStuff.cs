@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using MySql.Data.MySqlClient;
+using Mysqlx.Crud;
+using Org.BouncyCastle.Tls;
 
 namespace C969
 {
@@ -20,7 +22,7 @@ namespace C969
 
         public static BindingList<CustomerData> DataHolder = new BindingList<CustomerData>();
 
-        private static string? WhoL;
+        public static string? WhoL;
         public static bool CheckUser(string user, string pass)
         {
             using (MySqlConnection con = new MySqlConnection(MSQL))
@@ -312,6 +314,53 @@ namespace C969
                 }
             }
         }
+
+        public static void GetNames(ComboBox inhere, Dictionary<string,int> holder)
+        {
+            inhere.Items.Clear();
+            string SQLq = @"SELECT customerName, customerId FROM customer ORDER BY customerName";
+
+            using (MySqlConnection con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(SQLq, con);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string name = reader.GetString("customerName");
+                        int id = reader.GetInt32("customerId");
+                        holder[name] = id; 
+                        inhere.Items.Add(name);
+                        Debug.WriteLine(name);
+                    }
+                }
+            }
+        }
+
+        public static int GetselfId()
+        {
+            string SQLq = @"SELECT userId FROM user WHERE username = @username";
+            using (MySqlConnection con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(SQLq, con);
+                cmd.Parameters.AddWithValue("@username", WhoL);
+
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetInt32("userId");
+                    }
+                    else
+                    {
+                        throw new Exception("Id not found.");
+                    }
+                }
+            }
+        }
+
 
 
     }

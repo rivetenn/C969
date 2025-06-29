@@ -1,4 +1,6 @@
-﻿namespace C969
+﻿using MySql.Data.MySqlClient;
+
+namespace C969
 {
     partial class Appointments
     {
@@ -52,6 +54,8 @@
             DeleteB = new Button();
             TimeZoneCBox = new ComboBox();
             TimeZ = new Label();
+            DST = new CheckBox();
+            ClearB = new Button();
             ((System.ComponentModel.ISupportInitialize)DataApp).BeginInit();
             SuspendLayout();
             // 
@@ -255,11 +259,32 @@
             TimeZ.TabIndex = 25;
             TimeZ.Text = "Time Zone:";
             // 
+            // DST
+            // 
+            DST.AutoSize = true;
+            DST.Location = new Point(335, 370);
+            DST.Name = "DST";
+            DST.Size = new Size(114, 19);
+            DST.TabIndex = 26;
+            DST.Text = "Day Light Saving";
+            DST.UseVisualStyleBackColor = true;
+            // 
+            // ClearB
+            // 
+            ClearB.Location = new Point(482, 664);
+            ClearB.Name = "ClearB";
+            ClearB.Size = new Size(75, 23);
+            ClearB.TabIndex = 27;
+            ClearB.Text = "Clear";
+            ClearB.UseVisualStyleBackColor = true;
+            // 
             // Appointments
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(744, 699);
+            Controls.Add(ClearB);
+            Controls.Add(DST);
             Controls.Add(TimeZ);
             Controls.Add(TimeZoneCBox);
             Controls.Add(DeleteB);
@@ -286,16 +311,113 @@
             Controls.Add(PeopleL);
             Name = "Appointments";
             Text = "Appointments";
+            Load += StartUp;
             ((System.ComponentModel.ISupportInitialize)DataApp).EndInit();
             ResumeLayout(false);
             PerformLayout();
-            Load += StartUp;
         }
         #endregion
 
+        public static Dictionary<string, int> ApDic = new Dictionary<string, int>() ;
+        private void Add_Click(object sender, EventArgs e)
+        {
+            if (ClientBox.SelectedItem == null)
+            {
+                return;
+            }
+            AppTools app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text, LBox.Text, ContactBox.Text, TypeBox.Text, DateO.Value.Date + TimeStart.Value.TimeOfDay, DateO.Value.Date + TimeEnd.Value.TimeOfDay);
+            SQLApp.AddAppointment(app);
+            SQLApp.UpdateDataH();
+        }
         private void StartUp(object sender, EventArgs e)
         {
+            TimeZoneCBox.Items.Add("Eastern Standard Time");
+            TimeZoneCBox.Items.Add("Pacific Standard Time");
+            TimeZoneCBox.Items.Add("Mountain Standard Time");
+            TimeZoneCBox.Items.Add("Central Standard Time");
+            TimeZoneCBox.SelectedIndex = 0;
+            SQLStuff.GetNames(ClientBox, ApDic);
+            DataApp.DataSource = SQLApp.DataHolder;
+            SQLApp.UpdateDataH();
+            DataApp.Columns["appID"].Visible = false;
+            DataApp.Columns["custid"].Visible = false;
+            DataApp.Columns["userid"].Visible = false;
+            DataApp.ReadOnly = true;
+            DataApp.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            SaveB.Click += Add_Click;
+            CancelB.Click += Cancel_Click;
+            DeleteB.Click += Delete_Click;
+            UpdateB.Click += Update_Click;
+            DataApp.CellClick += Selectedthis;
+            ClearB.Click += Clear_Click;
+        }
 
+        private void Delete_Click(object sender, EventArgs e)
+        {
+            if (DataApp.SelectedRows.Count == 0)
+            {
+                return;
+            }
+            int appId = (int)DataApp.SelectedRows[0].Cells["appID"].Value;
+            SQLApp.DeleteAppointment(appId);
+        }
+
+        private int GetUserID(string name)
+        {
+            return ApDic.TryGetValue(name, out int userId) ? userId : 0;
+        }
+
+        private int GetselfID()
+        {
+            return SQLStuff.GetselfId();
+        }
+
+        private void Cancel_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void Update_Click(object sender, EventArgs e)
+        {
+            if (DataApp.SelectedRows.Count == 0)
+            {
+                return;
+            }
+            int appId = (int)DataApp.SelectedRows[0].Cells["appID"].Value;
+            AppTools app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text, LBox.Text, ContactBox.Text, TypeBox.Text, DateO.Value.Date + TimeStart.Value.TimeOfDay, DateO.Value.Date + TimeEnd.Value.TimeOfDay, appID: appId);
+            SQLApp.UpdateAppointment(app);
+            SQLApp.UpdateDataH();
+        }
+        private void Selectedthis(object sender, DataGridViewCellEventArgs e)
+        {
+            if (DataApp.SelectedRows.Count > 0)
+            {
+                int index = DataApp.SelectedRows[0].Index;
+                AppTools selected = SQLApp.DataHolder[index];
+
+                ClientBox.SelectedItem = selected.name;
+                TitleBox.Text = selected.title;
+                DescBox.Text = selected.description;
+                LBox.Text = selected.location;
+                ContactBox.Text = selected.cont;
+                TypeBox.Text = selected.type;
+                DateO.Value = selected.start.Date;
+                TimeStart.Value = selected.start;
+                TimeEnd.Value = selected.end;
+            }
+        }
+
+        private void Clear_Click(object sender, EventArgs e)
+        {
+            ClientBox.SelectedIndex = -1;
+            TitleBox.Clear();
+            DescBox.Clear();
+            LBox.Clear();
+            ContactBox.Clear();
+            TypeBox.Clear();
+            DateO.Value = DateTime.Now;
+            TimeStart.Value = DateTime.Now;
+            TimeEnd.Value = DateTime.Now;
         }
 
 
@@ -323,5 +445,7 @@
         private Button DeleteB;
         private ComboBox TimeZoneCBox;
         private Label TimeZ;
+        private CheckBox DST;
+        private Button ClearB;
     }
 }
