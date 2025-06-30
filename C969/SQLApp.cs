@@ -17,6 +17,8 @@ namespace C969
 
         public static BindingList<AppTools> DataHolder = new BindingList<AppTools>();
 
+        public static BindingList<AppTools> Dailyr = new BindingList<AppTools>();
+
         public static void UpdateDataH()
         {
             DataHolder.Clear();
@@ -119,7 +121,7 @@ namespace C969
             }
         }
 
-        internal static void UpdateAppointment(AppTools app)
+        public static void UpdateAppointment(AppTools app)
         {
             string SQLq = @"UPDATE appointment SET customerId = @custid, userId = @userid, title = @title, description = @description, location = @location,
             contact = @cont, type = @type, url = @url, start = @start, end = @end, lastUpdate = NOW(), lastUpdateBy = @user
@@ -159,5 +161,64 @@ namespace C969
                 }
             }
         }
+
+        public static bool CheckForApp(DateTime start, DateTime end)
+        {
+            string query = @"SELECT COUNT(*) FROM appointment 
+                     WHERE (start < @end AND end > @start)";
+            using (var con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                using (var cmd = new MySqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@start", start);
+                    cmd.Parameters.AddWithValue("@end", end);
+
+                    int count = Convert.ToInt32(cmd.ExecuteScalar());
+                    return count > 0;
+                }
+            }
+        }
+
+        public static void DateApps(DateTime start, DateTime end)
+        {
+            Dailyr.Clear();
+            string SQLq = @"SELECT app.appointmentId, app.customerId, app.userId, app.title, app.description, app.location, app.url, app.contact, app.type, app.start, app.end, c.customerName
+                    FROM appointment app
+                    JOIN customer c ON app.customerId = c.customerId
+                    WHERE app.start >= @start AND app.end <= @end";
+
+            using (MySqlConnection con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                using (MySqlCommand cmd = new MySqlCommand(SQLq, con))
+                {
+                    cmd.Parameters.AddWithValue("@start", start);
+                    cmd.Parameters.AddWithValue("@end", end);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int appid = reader.GetInt32("appointmentId");
+                            int custid = reader.GetInt32("customerId");
+                            int userId = reader.GetInt32("userId");
+                            string name = reader.GetString("customerName");
+                            string title = reader.GetString("title");
+                            string description = reader.GetString("description");
+                            string location = reader.GetString("location");
+                            string cont = reader.GetString("contact");
+                            string type = reader.GetString("type");
+                            string url = reader.GetString("url");
+                            DateTime s = reader.GetDateTime("start");
+                            DateTime e = reader.GetDateTime("end");
+
+                            Dailyr.Add(new AppTools(custid, userId, name, title, description, location, cont, type, s, e, url, appid));
+                        }
+                    }
+                }
+            }
+        }
+
     }
 }

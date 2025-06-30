@@ -31,9 +31,9 @@
             ManageB = new Button();
             AppointB = new Button();
             JustData = new DataGridView();
-            Calendar = new DataGridView();
+            monthCalendar2 = new MonthCalendar();
+            ReportB = new Button();
             ((System.ComponentModel.ISupportInitialize)JustData).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)Calendar).BeginInit();
             SuspendLayout();
             // 
             // ManageB
@@ -57,25 +57,33 @@
             // JustData
             // 
             JustData.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            JustData.Location = new Point(234, 288);
+            JustData.Location = new Point(234, 270);
             JustData.Name = "JustData";
-            JustData.Size = new Size(554, 150);
+            JustData.Size = new Size(554, 168);
             JustData.TabIndex = 13;
             // 
-            // Calendar
+            // monthCalendar2
             // 
-            Calendar.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            Calendar.Location = new Point(234, 40);
-            Calendar.Name = "Calendar";
-            Calendar.Size = new Size(554, 242);
-            Calendar.TabIndex = 14;
+            monthCalendar2.Location = new Point(234, 59);
+            monthCalendar2.Name = "monthCalendar2";
+            monthCalendar2.TabIndex = 14;
+            // 
+            // ReportB
+            // 
+            ReportB.Location = new Point(47, 309);
+            ReportB.Name = "ReportB";
+            ReportB.Size = new Size(75, 23);
+            ReportB.TabIndex = 15;
+            ReportB.Text = "Reports";
+            ReportB.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(Calendar);
+            Controls.Add(ReportB);
+            Controls.Add(monthCalendar2);
             Controls.Add(JustData);
             Controls.Add(AppointB);
             Controls.Add(ManageB);
@@ -83,7 +91,6 @@
             Text = "Home";
             Load += StartUp;
             ((System.ComponentModel.ISupportInitialize)JustData).EndInit();
-            ((System.ComponentModel.ISupportInitialize)Calendar).EndInit();
             ResumeLayout(false);
         }
 
@@ -105,11 +112,34 @@
         {
             ManageB.Click += ManageB_Click;
             AppointB.Click += AppointB_Click;
+            monthCalendar2.DateChanged += Calendar2_DateChanged;
+            JustData.DataSource = SQLApp.Dailyr;
+            JustData.Columns["appID"].Visible = false;
+            JustData.Columns["custid"].Visible = false;
+            JustData.Columns["userid"].Visible = false;
+            JustData.Columns["title"].Visible = false;
+            JustData.Columns["url"].Visible = false;
+            JustData.Columns["Name"].HeaderText ="Name";
+            JustData.Columns["description"].HeaderText = "Description";
+            JustData.Columns["location"].HeaderText = "Location";
+            JustData.Columns["cont"].HeaderText = "Contact";
+            JustData.Columns["type"].HeaderText = "Type";
+            JustData.Columns["start"].HeaderText = "Start Time";
+            JustData.Columns["end"].HeaderText = "End Time";
         }
+
+        private void Calendar2_DateChanged(object sender, DateRangeEventArgs e)
+        {
+            DateTime start = monthCalendar2.SelectionStart;
+            DateTime end = monthCalendar2.SelectionEnd;
+            SQLApp.DateApps(start, end);
+        }
+
+
         private Button ManageB;
         private Button AppointB;
-        private MonthCalendar monthCalendar1;
         private DataGridView JustData;
-        private DataGridView Calendar;
+        private MonthCalendar monthCalendar2;
+        private Button ReportB;
     }
 }

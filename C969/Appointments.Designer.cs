@@ -184,17 +184,21 @@ namespace C969
             // 
             // TimeStart
             // 
-            TimeStart.Format = DateTimePickerFormat.Time;
+            TimeStart.CustomFormat = "hh:mm tt";
+            TimeStart.Format = DateTimePickerFormat.Custom;
             TimeStart.Location = new Point(104, 370);
             TimeStart.Name = "TimeStart";
+            TimeStart.ShowUpDown = true;
             TimeStart.Size = new Size(106, 23);
             TimeStart.TabIndex = 17;
             // 
             // TimeEnd
             // 
-            TimeEnd.Format = DateTimePickerFormat.Time;
+            TimeEnd.CustomFormat = "hh:mm tt";
+            TimeEnd.Format = DateTimePickerFormat.Custom;
             TimeEnd.Location = new Point(216, 370);
             TimeEnd.Name = "TimeEnd";
+            TimeEnd.ShowUpDown = true;
             TimeEnd.Size = new Size(106, 23);
             TimeEnd.TabIndex = 18;
             // 
@@ -320,21 +324,46 @@ namespace C969
 
         public static Dictionary<string, int> ApDic = new Dictionary<string, int>() ;
         private void Add_Click(object sender, EventArgs e)
-        {
-            if (ClientBox.SelectedItem == null)
-            {
-                return;
-            }
-            AppTools app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text, LBox.Text, ContactBox.Text, TypeBox.Text, DateO.Value.Date + TimeStart.Value.TimeOfDay, DateO.Value.Date + TimeEnd.Value.TimeOfDay);
+        {try{
+            if (ClientBox.SelectedItem == null) return;
+
+            TimeManagement();
+            var app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text,
+                LBox.Text, ContactBox.Text, TypeBox.Text, start, end);
+
             SQLApp.AddAppointment(app);
             SQLApp.UpdateDataH();
+                ClearAll(); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Add failed: " + ex.Message);
+            }
+        }
+
+        private void Update_Click(object sender, EventArgs e)
+        {
+            try{
+            if (DataApp.SelectedRows.Count == 0) return;
+
+            TimeManagement();
+            int appId = (int)DataApp.SelectedRows[0].Cells["appID"].Value;
+            var app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text,
+                LBox.Text, ContactBox.Text, TypeBox.Text, start, end, appID: appId);
+
+            SQLApp.UpdateAppointment(app);
+            SQLApp.UpdateDataH();
+                ClearAll(); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Update failed: " + ex.Message);
+            }
         }
         private void StartUp(object sender, EventArgs e)
         {
-            TimeZoneCBox.Items.Add("Eastern Standard Time");
-            TimeZoneCBox.Items.Add("Pacific Standard Time");
-            TimeZoneCBox.Items.Add("Mountain Standard Time");
-            TimeZoneCBox.Items.Add("Central Standard Time");
+            TimeZoneCBox.Items.Add("EST");
+            TimeZoneCBox.Items.Add("PST");
+            TimeZoneCBox.Items.Add("MST");
+            TimeZoneCBox.Items.Add("CST");
             TimeZoneCBox.SelectedIndex = 0;
             SQLStuff.GetNames(ClientBox, ApDic);
             DataApp.DataSource = SQLApp.DataHolder;
@@ -350,6 +379,7 @@ namespace C969
             UpdateB.Click += Update_Click;
             DataApp.CellClick += Selectedthis;
             ClearB.Click += Clear_Click;
+            DateO.MinDate = DateTime.Now;
         }
 
         private void Delete_Click(object sender, EventArgs e)
@@ -376,17 +406,34 @@ namespace C969
         {
             Close();
         }
+        DateTime start;
+        DateTime end;
 
-        private void Update_Click(object sender, EventArgs e)
+        private void TimeManagement()
         {
-            if (DataApp.SelectedRows.Count == 0)
+            start = DateO.Value.Date + TimeStart.Value.TimeOfDay;
+            end = DateO.Value.Date + TimeEnd.Value.TimeOfDay;
+            if (DST.Checked)
             {
-                return;
+                start = start.AddHours(1);
+                end = end.AddHours(1);
             }
-            int appId = (int)DataApp.SelectedRows[0].Cells["appID"].Value;
-            AppTools app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text, LBox.Text, ContactBox.Text, TypeBox.Text, DateO.Value.Date + TimeStart.Value.TimeOfDay, DateO.Value.Date + TimeEnd.Value.TimeOfDay, appID: appId);
-            SQLApp.UpdateAppointment(app);
-            SQLApp.UpdateDataH();
+            switch (TimeZoneCBox.SelectedItem.ToString())
+            {
+                case "CST": start = start.AddHours(1); end = end.AddHours(1); break;
+                case "MST": start = start.AddHours(2); end = end.AddHours(2); break;
+                case "PST": start = start.AddHours(3); end = end.AddHours(3); break;
+            }
+
+                if (start.Hour < 9 || end.Hour > 17 || (end.Hour == 17 && end.Minute > 0) || end <= start)
+                {
+                    throw new Exception("Invalid Time");
+                }
+
+                if (SQLApp.CheckForApp(start, end))
+                {
+                    throw new Exception("Appointment Exists");
+                }
         }
         private void Selectedthis(object sender, DataGridViewCellEventArgs e)
         {
@@ -401,7 +448,6 @@ namespace C969
                 LBox.Text = selected.location;
                 ContactBox.Text = selected.cont;
                 TypeBox.Text = selected.type;
-                DateO.Value = selected.start.Date;
                 TimeStart.Value = selected.start;
                 TimeEnd.Value = selected.end;
             }
@@ -409,17 +455,22 @@ namespace C969
 
         private void Clear_Click(object sender, EventArgs e)
         {
+            ClearAll();
+        }
+
+        private void ClearAll()
+        {
             ClientBox.SelectedIndex = -1;
             TitleBox.Clear();
             DescBox.Clear();
             LBox.Clear();
             ContactBox.Clear();
             TypeBox.Clear();
+            DST.Checked = false;
             DateO.Value = DateTime.Now;
             TimeStart.Value = DateTime.Now;
             TimeEnd.Value = DateTime.Now;
         }
-
 
         private Label PeopleL;
         private ComboBox ClientBox;
