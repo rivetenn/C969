@@ -107,6 +107,12 @@
             schedule.ShowDialog();
         }
 
+        void ReportB_Click(object sender, EventArgs e)
+        {
+            Form1 reports = new Form1();
+            reports.ShowDialog();
+        }   
+
 
         private void StartUp(object sender, EventArgs e)
         {
@@ -126,6 +132,8 @@
             JustData.Columns["type"].HeaderText = "Type";
             JustData.Columns["start"].HeaderText = "Start Time";
             JustData.Columns["end"].HeaderText = "End Time";
+            SQLApp.CheckFA();
+            ReportB.Click += ReportB_Click;
         }
 
         private void Calendar2_DateChanged(object sender, DateRangeEventArgs e)

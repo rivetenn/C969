@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.VisualBasic.ApplicationServices;
 using MySql.Data.MySqlClient;
 
 namespace C969
@@ -214,6 +215,40 @@ namespace C969
                             DateTime e = reader.GetDateTime("end");
 
                             Dailyr.Add(new AppTools(custid, userId, name, title, description, location, cont, type, s, e, url, appid));
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void CheckFA()
+        {
+            string thisq = @"SELECT start FROM appointment 
+                     WHERE userId = @userId 
+                     AND start BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 15 MINUTE)";
+
+            string getme = @"SELECT userId FROM user
+                        WHERE userName = @userId";    
+            using (MySqlConnection con = new MySqlConnection(MSQL))
+            {
+                con.Open();
+                int userId;
+                using (MySqlCommand cmd = new MySqlCommand(getme, con))
+                {
+                    cmd.Parameters.AddWithValue("@userId", SQLStuff.WhoL);
+                    userId = Convert.ToInt32(cmd.ExecuteScalar());
+                }
+
+                using (MySqlCommand cmd = new MySqlCommand(thisq, con))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            DateTime start = reader.GetDateTime("start");
+                            MessageBox.Show($"Appointment at {start:t}");
                         }
                     }
                 }
