@@ -248,8 +248,8 @@ namespace C969
         {
             try
             {
-                CustomerData newCustomer = new CustomerData(NameBox.Text, AddressBox.Text, PhoneBox.Text,  
-                   CityBox.Text, CountryBox.Text, ZipBox.Text, Addres2Box.Text);
+                CustomerData newCustomer = new CustomerData(NameBox.Text.Trim(), AddressBox.Text.Trim(), PhoneBox.Text.Trim(),  
+                   CityBox.Text.Trim(), CountryBox.Text.Trim(), ZipBox.Text.Trim(), Addres2Box.Text.Trim());
                 SQLStuff.AddCustomer(newCustomer);
                 SQLStuff.UpdateDataH();
                 ClearTextBoxes();
@@ -280,13 +280,13 @@ namespace C969
                 CustomerData custId = SQLStuff.DataHolder[crustomer];
                 if (custId.CustId.HasValue)
                 {
-                    custId.Name = NameBox.Text;
-                    custId.Phone = PhoneBox.Text;
-                    custId.Address = AddressBox.Text;
-                    custId.Address2 = Addres2Box.Text;
-                    custId.City = CityBox.Text;
-                    custId.Country = CountryBox.Text;
-                    custId.PostalCode = ZipBox.Text;
+                    custId.Name = NameBox.Text.Trim();
+                    custId.Phone = PhoneBox.Text.Trim();
+                    custId.Address = AddressBox.Text.Trim();
+                    custId.Address2 = Addres2Box.Text.Trim();
+                    custId.City = CityBox.Text.Trim();
+                    custId.Country = CountryBox.Text.Trim();
+                    custId.PostalCode = ZipBox.Text.Trim();
 
                     Debug.WriteLine("Working");
                     SQLStuff.UpdateCustomer(custId);
@@ -341,6 +341,7 @@ namespace C969
             ZipBox.Clear();
             Addres2Box.Clear();
         }
+
         private Label NameL;
         private Label PhoneL;
         private Label AddressL;

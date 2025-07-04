@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Cache;
-using GeoCoordinatePortable;
 using System.Text.Json;
 namespace C969
 {
@@ -214,7 +213,7 @@ namespace C969
             LoginB.Click += LoginB_Click;
             LoadLocation();
             CountryL.DataBindings.Add("Text", this, "CountryN");
-            LanguageBox.Items.AddRange(new object[] { "English", "Japanese" });
+            LanguageBox.Items.AddRange(new object[] { "English", "日本語" });
             LanguageBox.SelectedIndex = 0; 
             LanguageBox.SelectedIndexChanged += LanguageBox_Changed;
             LanguageBox.DropDownStyle = ComboBoxStyle.DropDownList;
