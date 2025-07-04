@@ -37,33 +37,24 @@ namespace C969
 
         private static string CheckP(string phone)
         {
-            int countN = 0;
-            int countD = 0;
-            foreach (char c in phone)
+            string digitsOnly = new string(phone.Where(char.IsDigit).ToArray());
+
+            if (digitsOnly.Length == 7)
             {
-                if (char.IsDigit(c))
-                {
-                    countN++;
-                }
-                else if (c == '-')
-                {
-                    countD++;
-                }
-                else
-                {
-                    throw new Exception("Invalid Phone Number");
-                }
+                return $"{digitsOnly.Substring(0, 3)}-{digitsOnly.Substring(3)}";
             }
-            if (countN != 7 || countD > 1 || (countD == 1 && phone[3] != '-'))
+            else if (digitsOnly.Length == 10)
+            {
+                return $"{digitsOnly.Substring(0, 3)}-{digitsOnly.Substring(3, 3)}-{digitsOnly.Substring(6)}";
+            }
+            else if (digitsOnly.Length == 11 && digitsOnly.StartsWith("1"))
+            {
+                return $"{digitsOnly.Substring(0, 1)}-{digitsOnly.Substring(1, 3)}-{digitsOnly.Substring(4, 3)}-{digitsOnly.Substring(7)}";
+            }
+            else
             {
                 throw new Exception("Invalid Phone Number");
             }
-            if (countD == 0)
-            {
-                phone = phone.Insert(3, "-");
-            }
-
-            return phone;
         }
         private static void CheckIfEmpty(string[] values)
         {
