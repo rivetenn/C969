@@ -57,6 +57,12 @@ namespace C969
             passwordBox = new TextBox();
             LoginB = new Button();
             CancelB = new Button();
+            label1 = new Label();
+            label2 = new Label();
+            label5 = new Label();
+            UTCL = new Label();
+            ETSL = new Label();
+            LocalL = new Label();
             SuspendLayout();
             // 
             // CountryL
@@ -127,11 +133,72 @@ namespace C969
             CancelB.Text = "Cancel";
             CancelB.UseVisualStyleBackColor = true;
             // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(22, 13);
+            label1.Name = "label1";
+            label1.Size = new Size(38, 15);
+            label1.TabIndex = 9;
+            label1.Text = "Local:";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(32, 28);
+            label2.Name = "label2";
+            label2.Size = new Size(28, 15);
+            label2.TabIndex = 10;
+            label2.Text = "ETS:";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new Point(29, 43);
+            label5.Name = "label5";
+            label5.Size = new Size(31, 15);
+            label5.TabIndex = 11;
+            label5.Text = "UTC:";
+            // 
+            // UTCL
+            // 
+            UTCL.AutoSize = true;
+            UTCL.Location = new Point(66, 43);
+            UTCL.Name = "UTCL";
+            UTCL.Size = new Size(31, 15);
+            UTCL.TabIndex = 14;
+            UTCL.Text = "UTC:";
+            // 
+            // ETSL
+            // 
+            ETSL.AutoSize = true;
+            ETSL.Location = new Point(66, 28);
+            ETSL.Name = "ETSL";
+            ETSL.Size = new Size(28, 15);
+            ETSL.TabIndex = 13;
+            ETSL.Text = "ETS:";
+            // 
+            // LocalL
+            // 
+            LocalL.AutoSize = true;
+            LocalL.Location = new Point(66, 13);
+            LocalL.Name = "LocalL";
+            LocalL.Size = new Size(38, 15);
+            LocalL.TabIndex = 12;
+            LocalL.Text = "Local:";
+            LocalL.Click += label8_Click;
+            // 
             // LoginScreen
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(492, 450);
+            Controls.Add(UTCL);
+            Controls.Add(ETSL);
+            Controls.Add(LocalL);
+            Controls.Add(label5);
+            Controls.Add(label2);
+            Controls.Add(label1);
             Controls.Add(CancelB);
             Controls.Add(LoginB);
             Controls.Add(passwordBox);
@@ -223,13 +290,13 @@ namespace C969
             LanguageBox.SelectedIndexChanged += LanguageBox_Changed;
             LanguageBox.DropDownStyle = ComboBoxStyle.DropDownList;
             LoginForm_Load();
-
+            SanityTimes();
         }
 
 
         private void LoginForm_Load()
             {
-                string asd = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                string asd = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
                 Debug.WriteLine("Current Language: " + asd);
                 
 
@@ -239,7 +306,20 @@ namespace C969
                     LanguageBox.SelectedIndex = 1;
 
                 LanguageBox_Changed(LanguageBox, EventArgs.Empty);
-            }
+        }
 
+        private void SanityTimes()
+        {
+            LocalL.Text = DateTime.Now.ToString("HH:mm", CultureInfo.InvariantCulture);
+            ETSL.Text = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Eastern Standard Time").ToString("HH:mm", CultureInfo.InvariantCulture);
+            UTCL.Text = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "UTC").ToString("HH:mm", CultureInfo.InvariantCulture);
+        }
+
+        private Label label1;
+        private Label label2;
+        private Label label5;
+        private Label UTCL;
+        private Label ETSL;
+        private Label LocalL;
     }
 }

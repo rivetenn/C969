@@ -38,7 +38,6 @@ namespace C969
                 {
                     WhoL = user;
                 }
-                con.Close();
                 return exists;
             }
         }
@@ -67,24 +66,33 @@ namespace C969
                         string city = reader.GetString("city");
                         string country = reader.GetString("country");
                         string postal = reader.GetString("postalCode");
+                        try
+                        {
+                            DataHolder.Add(new CustomerData(name, address, phone, city, country, postal, address2) { CustId = custid });
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error Importing Customer Data: " + ex.Message);
+                        }
 
-                        DataHolder.Add(new CustomerData(name, address, phone, city, country, postal, address2) { CustId = custid });
                     }
                 }
             }
         }
         public static void AddCustomer(CustomerData obj)
         {
+            DateTime UTC = DateTime.UtcNow;
+
             string selectCountry = "SELECT countryId FROM country WHERE country = @country";
-            string insertCountry = "INSERT INTO country (country, createDate, createdBy, lastUpdateBy) VALUES (@country, NOW(), @user, @user)";
+            string insertCountry = "INSERT INTO country (country, createDate, createdBy, lastUpdateBy) VALUES (@country, @utc, @user, @user)";
 
             string selectCity = "SELECT cityId FROM city WHERE city = @city AND countryId = @countryId";
-            string insertCity = "INSERT INTO city (city, countryId, createDate, createdBy, lastUpdateBy) VALUES (@city, @countryId, NOW(), @user, @user)";
+            string insertCity = "INSERT INTO city (city, countryId, createDate, createdBy, lastUpdateBy) VALUES (@city, @countryId, @utc, @user, @user)";
 
-            string insertAddress = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdateBy) VALUES (@address, @address2, @cityId, @postal, @phone, NOW(), @user, @user)";
+            string insertAddress = "INSERT INTO address (address, address2, cityId, postalCode, phone, createDate, createdBy, lastUpdateBy) VALUES (@address, @address2, @cityId, @postal, @phone, @utc, @user, @user)";
             string getLastId = "SELECT LAST_INSERT_ID()";
 
-            string insertCustomer = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdateBy) VALUES (@name, @addressId, 1, NOW(), @user, @user)";
+            string insertCustomer = "INSERT INTO customer (customerName, addressId, active, createDate, createdBy, lastUpdateBy) VALUES (@name, @addressId, 1, @utc, @user, @user)";
 
             using (MySqlConnection con = new MySqlConnection(MSQL))
             {
@@ -106,6 +114,7 @@ namespace C969
                                 {
                                     insert.Parameters.AddWithValue("@country", obj.Country);
                                     insert.Parameters.AddWithValue("@user", WhoL);
+                                    insert.Parameters.AddWithValue("@utc", UTC);
                                     insert.ExecuteNonQuery();
                                 }
                                 countryId = Convert.ToInt32(new MySqlCommand(getLastId, con, tx).ExecuteScalar());
@@ -127,6 +136,7 @@ namespace C969
                                     insert.Parameters.AddWithValue("@city", obj.City);
                                     insert.Parameters.AddWithValue("@countryId", countryId);
                                     insert.Parameters.AddWithValue("@user", WhoL);
+                                    insert.Parameters.AddWithValue("@utc", UTC);
                                     insert.ExecuteNonQuery();
                                 }
                                 cityId = Convert.ToInt32(new MySqlCommand(getLastId, con, tx).ExecuteScalar());
@@ -142,6 +152,7 @@ namespace C969
                             cmd.Parameters.AddWithValue("@postal", obj.PostalCode);
                             cmd.Parameters.AddWithValue("@phone", obj.Phone);
                             cmd.Parameters.AddWithValue("@user", WhoL);
+                            cmd.Parameters.AddWithValue("@utc", UTC);
                             cmd.ExecuteNonQuery();
                             addressId = Convert.ToInt32(new MySqlCommand(getLastId, con, tx).ExecuteScalar());
                         }
@@ -151,6 +162,7 @@ namespace C969
                             cmd.Parameters.AddWithValue("@name", obj.Name);
                             cmd.Parameters.AddWithValue("@addressId", addressId);
                             cmd.Parameters.AddWithValue("@user", WhoL);
+                            cmd.Parameters.AddWithValue("@utc", UTC);
                             cmd.ExecuteNonQuery();
                         }
 
@@ -211,6 +223,7 @@ namespace C969
 
         public static void UpdateCustomer(CustomerData obj)
         {
+            DateTime UTC = DateTime.UtcNow;
             if (obj.CustId == null) throw new Exception("Customer ID is null");
 
             using (MySqlConnection con = new MySqlConnection(MSQL))
@@ -245,11 +258,12 @@ namespace C969
                             }
                             else
                             {
-                                q = "INSERT INTO country (country, createDate, createdBy, lastUpdateBy) VALUES (@country, NOW(), @user, @user)";
+                                q = "INSERT INTO country (country, createDate, createdBy, lastUpdateBy) VALUES (@country, @utc, @user, @user)";
                                 using (var insert = new MySqlCommand(q, con, tx))
                                 {
                                     insert.Parameters.AddWithValue("@country", obj.Country);
                                     insert.Parameters.AddWithValue("@user", WhoL);
+                                    insert.Parameters.AddWithValue("@utc", UTC);
                                     insert.ExecuteNonQuery();
                                     countryId = (int)insert.LastInsertedId;
                                 }
@@ -267,25 +281,27 @@ namespace C969
                             }
                             else
                             {
-                                q = "INSERT INTO city (city, countryId, createDate, createdBy, lastUpdateBy) VALUES (@city, @countryId, NOW(), @user, @user)";
+                                q = "INSERT INTO city (city, countryId, createDate, createdBy, lastUpdateBy) VALUES (@city, @countryId, @utc, @user, @user)";
                                 using (var insert = new MySqlCommand(q, con, tx))
                                 {
                                     insert.Parameters.AddWithValue("@city", obj.City);
                                     insert.Parameters.AddWithValue("@countryId", countryId);
                                     insert.Parameters.AddWithValue("@user", WhoL);
+                                    insert.Parameters.AddWithValue("@utc", UTC);
                                     insert.ExecuteNonQuery();
                                     cityId = (int)insert.LastInsertedId;
                                 }
                             }
                         }
                         q = @"UPDATE customer 
-                      SET customerName = @name, lastUpdateBy = @user, lastUpdate = NOW() 
+                      SET customerName = @name, lastUpdateBy = @user, lastUpdate = @utc 
                       WHERE customerId = @id";
                         using (var cmd = new MySqlCommand(q, con, tx))
                         {
                             cmd.Parameters.AddWithValue("@name", obj.Name);
                             cmd.Parameters.AddWithValue("@user", WhoL);
                             cmd.Parameters.AddWithValue("@id", obj.CustId);
+                            cmd.Parameters.AddWithValue("@utc", UTC);
                             cmd.ExecuteNonQuery();
                         }
                         q = @"UPDATE address 

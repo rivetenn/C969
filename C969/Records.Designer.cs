@@ -248,8 +248,11 @@ namespace C969
         {
             try
             {
+
+
                 CustomerData newCustomer = new CustomerData(NameBox.Text.Trim(), AddressBox.Text.Trim(), PhoneBox.Text.Trim(),  
                    CityBox.Text.Trim(), CountryBox.Text.Trim(), ZipBox.Text.Trim(), Addres2Box.Text.Trim());
+
                 SQLStuff.AddCustomer(newCustomer);
                 SQLStuff.UpdateDataH();
                 ClearTextBoxes();
@@ -286,9 +289,13 @@ namespace C969
                         string name = NameBox.Text.Trim();
                         string phone = PhoneBox.Text.Trim();
                         string address = AddressBox.Text.Trim();
+                        string city = CityBox.Text.Trim();
+                        string country = CountryBox.Text.Trim();
+                        string zip = ZipBox.Text.Trim();
 
-                        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(address))
-                            throw new Exception("Name, Phone, and Address cannot be empty.");
+                        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(address) ||
+                                string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(country) || string.IsNullOrWhiteSpace(zip))
+                            throw new Exception("Name, Phone, Address, City Name, Country and Zip Code cannot be empty.");
 
                         phone = CustomerData.CheckP(phone); 
 
@@ -296,9 +303,9 @@ namespace C969
                         custId.Phone = phone;
                         custId.Address = address;
                         custId.Address2 = Addres2Box.Text.Trim();
-                        custId.City = CityBox.Text.Trim();
-                        custId.Country = CountryBox.Text.Trim();
-                        custId.PostalCode = ZipBox.Text.Trim();
+                        custId.City = city;
+                        custId.Country = country;
+                        custId.PostalCode = zip;
 
                         SQLStuff.UpdateCustomer(custId);
                         ClearTextBoxes();

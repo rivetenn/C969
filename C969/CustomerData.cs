@@ -20,17 +20,22 @@ namespace C969
         public int? CustId { get; set; }
 
 
-        public CustomerData(string name, string address1, string phone, string city = "Not Listed", string country = "Not Listed", string postalCode = "Not Listed", string address2 = "Not Listed")
+        public CustomerData(string name, string address1, string phone, string city, string country, string postalCode, string address2)
         {
-            CheckIfEmpty(new string[] { name, address1, phone });
-            phone = CheckP(phone);
-            Name = name.Trim();
-            Address = address1.Trim();
-            Phone = phone.Trim();
-            City = city.Trim();
-            Country = country.Trim();
-            PostalCode = postalCode.Trim();
-            Address2 = address2.Trim();
+
+                CheckIfEmpty(new string[] { name, address1, phone, city, country, postalCode });
+                phone = CheckP(phone);
+                Name = name.Trim();
+                Address = address1.Trim();
+                Phone = phone.Trim();
+                City = city.Trim();
+                Country = country.Trim();
+                PostalCode = postalCode.Trim();
+                Address2 = address2.Trim();
+
+
+
+
         }
 
 
@@ -64,8 +69,9 @@ namespace C969
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentException("Invalid Input");
+                    throw new ArgumentException($"Missing Input");
                 }
+                
             }
         }
     }

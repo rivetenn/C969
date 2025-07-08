@@ -60,10 +60,11 @@ namespace C969
 
         public static void AddAppointment(AppTools app)
         {
+            DateTime UTC = DateTime.UtcNow;
             string SQLq = @"INSERT INTO appointment 
         (customerId, userId, title, description, location, contact, type, url, start, end, createDate, createdBy, lastUpdate, lastUpdateBy) 
         VALUES 
-        (@custid, @userid, @title, @description, @location, @cont, @type, @url, @start, @end, NOW(), @user, NOW(), @user)";
+        (@custid, @userid, @title, @description, @location, @cont, @type, @url, @start, @end, @utc, @user, @utc, @user)";
 
             using (MySqlConnection con = new MySqlConnection(MSQL))
             {
@@ -84,6 +85,7 @@ namespace C969
                         cmd.Parameters.AddWithValue("@start", app.start);
                         cmd.Parameters.AddWithValue("@end", app.end);
                         cmd.Parameters.AddWithValue("@user", SQLStuff.WhoL); 
+                        cmd.Parameters.AddWithValue("@utc", UTC);
 
                         cmd.ExecuteNonQuery();
                         tx.Commit();
@@ -128,8 +130,9 @@ namespace C969
 
         public static void UpdateAppointment(AppTools app)
         {
+            DateTime UTC = DateTime.UtcNow;
             string SQLq = @"UPDATE appointment SET customerId = @custid, userId = @userid, title = @title, description = @description, location = @location,
-            contact = @cont, type = @type, url = @url, start = @start, end = @end, lastUpdate = NOW(), lastUpdateBy = @user
+            contact = @cont, type = @type, url = @url, start = @start, end = @end, lastUpdate = @utc, lastUpdateBy = @user
         WHERE appointmentId = @appId";
 
             using (MySqlConnection con = new MySqlConnection(MSQL))
@@ -153,6 +156,7 @@ namespace C969
                             cmd.Parameters.AddWithValue("@end", app.end);
                             cmd.Parameters.AddWithValue("@user", SQLStuff.WhoL);
                             cmd.Parameters.AddWithValue("@appId", app.appID);
+                            cmd.Parameters.AddWithValue("@utc", UTC);
 
                             cmd.ExecuteNonQuery();
                         }

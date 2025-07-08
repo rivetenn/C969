@@ -12,17 +12,18 @@ namespace C969
 {
     public class LVal
     {
+        bool vallog;
         public void attemptLog(string iuser, string ipass, int language, LoginScreen loginscreen)
         {
-            bool vallog = SQLStuff.CheckUser(iuser,ipass);
-            if(!vallog)
+            vallog = SQLStuff.CheckUser(iuser,ipass);
+            LoginTracker(iuser, vallog);
+            if (!vallog)
             {
                 if (language == 0) { MessageBox.Show("The username and password do not match."); }
                 else if (language == 1) { MessageBox.Show("ユーザー名とパスワードが一致しません。"); }
             }
             else
             {
-                LoginTracker(iuser);
                 loginscreen.Hide();
                 MainForm mainform = new MainForm();
                 mainform.FormClosed += (s, args) => loginscreen.Close();
@@ -33,7 +34,7 @@ namespace C969
 
         }
 
-    static void LoginTracker(string iuser)
+    static void LoginTracker(string iuser, bool val)
         {   
             string projectRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\.."));
             string logDir = Path.Combine(projectRoot, "Logs");
@@ -42,7 +43,15 @@ namespace C969
             using (StreamWriter writer = new StreamWriter(logPath, append: true))
             {
                 Debug.WriteLine("Saving to: " + Path.GetFullPath("Login_History.txt"));
-                writer.WriteLine($"{iuser} has logged in at {DateTime.Now}");
+                if (val){
+                    writer.WriteLine($"{iuser} has logged in at {DateTime.UtcNow} UTC");
+                }
+                else
+                {
+                    writer.WriteLine($"{iuser} failed log in at {DateTime.UtcNow} UTC");
+                }
+
+
             }
         }
         
