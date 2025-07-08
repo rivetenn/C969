@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace C969
 {
@@ -52,10 +53,12 @@ namespace C969
             SaveB = new Button();
             UpdateB = new Button();
             DeleteB = new Button();
-            TimeZoneCBox = new ComboBox();
-            TimeZ = new Label();
-            DST = new CheckBox();
             ClearB = new Button();
+            TimeZL = new Label();
+            label2 = new Label();
+            label3 = new Label();
+            ESTStart = new DateTimePicker();
+            ESTend = new DateTimePicker();
             ((System.ComponentModel.ISupportInitialize)DataApp).BeginInit();
             SuspendLayout();
             // 
@@ -246,33 +249,6 @@ namespace C969
             DeleteB.Text = "Delete";
             DeleteB.UseVisualStyleBackColor = true;
             // 
-            // TimeZoneCBox
-            // 
-            TimeZoneCBox.FormattingEnabled = true;
-            TimeZoneCBox.Location = new Point(297, 326);
-            TimeZoneCBox.Name = "TimeZoneCBox";
-            TimeZoneCBox.Size = new Size(121, 23);
-            TimeZoneCBox.TabIndex = 24;
-            // 
-            // TimeZ
-            // 
-            TimeZ.AutoSize = true;
-            TimeZ.Location = new Point(225, 332);
-            TimeZ.Name = "TimeZ";
-            TimeZ.Size = new Size(66, 15);
-            TimeZ.TabIndex = 25;
-            TimeZ.Text = "Time Zone:";
-            // 
-            // DST
-            // 
-            DST.AutoSize = true;
-            DST.Location = new Point(335, 370);
-            DST.Name = "DST";
-            DST.Size = new Size(114, 19);
-            DST.TabIndex = 26;
-            DST.Text = "Day Light Saving";
-            DST.UseVisualStyleBackColor = true;
-            // 
             // ClearB
             // 
             ClearB.Location = new Point(482, 664);
@@ -282,15 +258,65 @@ namespace C969
             ClearB.Text = "Clear";
             ClearB.UseVisualStyleBackColor = true;
             // 
+            // TimeZL
+            // 
+            TimeZL.AutoSize = true;
+            TimeZL.Location = new Point(319, 332);
+            TimeZL.Name = "TimeZL";
+            TimeZL.Size = new Size(63, 15);
+            TimeZL.TabIndex = 28;
+            TimeZL.Text = "Time Zone";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new Point(216, 332);
+            label2.Name = "label2";
+            label2.Size = new Size(97, 15);
+            label2.TabIndex = 29;
+            label2.Text = "Local Time Zone:";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new Point(532, 334);
+            label3.Name = "label3";
+            label3.Size = new Size(25, 15);
+            label3.TabIndex = 30;
+            label3.Text = "EST";
+            label3.Click += label3_Click;
+            // 
+            // ESTStart
+            // 
+            ESTStart.CustomFormat = "hh:mm tt";
+            ESTStart.Format = DateTimePickerFormat.Custom;
+            ESTStart.Location = new Point(438, 370);
+            ESTStart.Name = "ESTStart";
+            ESTStart.ShowUpDown = true;
+            ESTStart.Size = new Size(106, 23);
+            ESTStart.TabIndex = 31;
+            // 
+            // ESTend
+            // 
+            ESTend.CustomFormat = "hh:mm tt";
+            ESTend.Format = DateTimePickerFormat.Custom;
+            ESTend.Location = new Point(550, 370);
+            ESTend.Name = "ESTend";
+            ESTend.ShowUpDown = true;
+            ESTend.Size = new Size(106, 23);
+            ESTend.TabIndex = 32;
+            // 
             // Appointments
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(744, 699);
+            Controls.Add(ESTend);
+            Controls.Add(ESTStart);
+            Controls.Add(label3);
+            Controls.Add(label2);
+            Controls.Add(TimeZL);
             Controls.Add(ClearB);
-            Controls.Add(DST);
-            Controls.Add(TimeZ);
-            Controls.Add(TimeZoneCBox);
             Controls.Add(DeleteB);
             Controls.Add(UpdateB);
             Controls.Add(SaveB);
@@ -327,7 +353,7 @@ namespace C969
         {try{
             if (ClientBox.SelectedItem == null) return;
 
-            TimeManagement();
+            TimeManagement(-1);
             var app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text,
                 LBox.Text, ContactBox.Text, TypeBox.Text, start, end);
 
@@ -344,9 +370,9 @@ namespace C969
         {
             try{
             if (DataApp.SelectedRows.Count == 0) return;
-
-            TimeManagement();
             int appId = (int)DataApp.SelectedRows[0].Cells["appID"].Value;
+            TimeManagement(appId);
+
             var app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text,
                 LBox.Text, ContactBox.Text, TypeBox.Text, start, end, appID: appId);
 
@@ -360,11 +386,6 @@ namespace C969
         }
         private void StartUp(object sender, EventArgs e)
         {
-            TimeZoneCBox.Items.Add("EST");
-            TimeZoneCBox.Items.Add("PST");
-            TimeZoneCBox.Items.Add("MST");
-            TimeZoneCBox.Items.Add("CST");
-            TimeZoneCBox.SelectedIndex = 0;
             SQLStuff.GetNames(ClientBox, ApDic);
             DataApp.DataSource = SQLApp.DataHolder;
             SQLApp.UpdateDataH();
@@ -379,8 +400,32 @@ namespace C969
             UpdateB.Click += Update_Click;
             DataApp.CellClick += Selectedthis;
             ClearB.Click += Clear_Click;
-            DateO.MinDate = DateTime.Now;
+            TimeZL.Text = TimeZoneInfo.Local.ToString();
+            TimeStart.ValueChanged += updateClock;
+            TimeEnd.ValueChanged += updateClock;
+            ESTStart.Enabled = false;
+            ESTend.Enabled = false;
+
+
         }
+        private void updateClock(object sender, EventArgs e)
+        {
+            TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+
+            DateTime localStart = DateO.Value.Date + TimeStart.Value.TimeOfDay;
+            DateTime localEnd = DateO.Value.Date + TimeEnd.Value.TimeOfDay;
+
+            localStart = DateTime.SpecifyKind(localStart, DateTimeKind.Local);
+            localEnd = DateTime.SpecifyKind(localEnd, DateTimeKind.Local);
+
+            DateTime estStart = TimeZoneInfo.ConvertTime(localStart, estZone);
+            DateTime estEnd = TimeZoneInfo.ConvertTime(localEnd, estZone);
+
+            ESTStart.Value = estStart;
+            ESTend.Value = estEnd;
+        }
+
+
 
         private void Delete_Click(object sender, EventArgs e)
         {
@@ -409,32 +454,38 @@ namespace C969
         DateTime start;
         DateTime end;
 
-        private void TimeManagement()
+
+        private void TimeManagement(int? id)
         {
-            start = DateO.Value.Date + TimeStart.Value.TimeOfDay;
-            end = DateO.Value.Date + TimeEnd.Value.TimeOfDay;
-            if (DST.Checked)
-            {
-                start = start.AddHours(1);
-                end = end.AddHours(1);
-            }
-            switch (TimeZoneCBox.SelectedItem.ToString())
-            {
-                case "CST": start = start.AddHours(1); end = end.AddHours(1); break;
-                case "MST": start = start.AddHours(2); end = end.AddHours(2); break;
-                case "PST": start = start.AddHours(3); end = end.AddHours(3); break;
-            }
+            if (DateO.Value.DayOfWeek == DayOfWeek.Saturday || DateO.Value.DayOfWeek == DayOfWeek.Sunday)
+                throw new Exception("Invalid Date: Cannot be on a weekend.");
 
-                if (start.Hour < 9 || end.Hour > 17 || (end.Hour == 17 && end.Minute > 0) || end <= start)
-                {
-                    throw new Exception("Invalid Time");
-                }
+            DateTime localStart = DateO.Value.Date + TimeStart.Value.TimeOfDay;
+            DateTime localEnd = DateO.Value.Date + TimeEnd.Value.TimeOfDay;
 
+            TimeZoneInfo estZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime estStart = TimeZoneInfo.ConvertTime(localStart, TimeZoneInfo.Local, estZone);
+            DateTime estEnd = TimeZoneInfo.ConvertTime(localEnd, TimeZoneInfo.Local, estZone);
+
+            if (estStart.Hour < 9 || estEnd.Hour > 17 || (estEnd.Hour == 17 && estEnd.Minute > 0) || estEnd <= estStart)
+                throw new Exception("Invalid Time: Must be between 9 AM and 5 PM EST");
+
+            start = TimeZoneInfo.ConvertTimeToUtc(localStart, TimeZoneInfo.Local);
+            end = TimeZoneInfo.ConvertTimeToUtc(localEnd, TimeZoneInfo.Local);
+
+            if (id == -1)
+            {
                 if (SQLApp.CheckForApp(start, end))
-                {
                     throw new Exception("Appointment Exists");
-                }
+            }
+            else
+            {
+                if (SQLApp.CheckForApp(start, end, id.Value))
+                    throw new Exception("Appointment Exists");
+            }
         }
+
+
         private void Selectedthis(object sender, DataGridViewCellEventArgs e)
         {
             if (DataApp.SelectedRows.Count > 0)
@@ -448,6 +499,7 @@ namespace C969
                 LBox.Text = selected.location;
                 ContactBox.Text = selected.cont;
                 TypeBox.Text = selected.type;
+                DateO.Value = selected.start.Date;
                 TimeStart.Value = selected.start;
                 TimeEnd.Value = selected.end;
             }
@@ -466,7 +518,6 @@ namespace C969
             LBox.Clear();
             ContactBox.Clear();
             TypeBox.Clear();
-            DST.Checked = false;
             DateO.Value = DateTime.Now;
             TimeStart.Value = DateTime.Now;
             TimeEnd.Value = DateTime.Now;
@@ -494,9 +545,11 @@ namespace C969
         private Button SaveB;
         private Button UpdateB;
         private Button DeleteB;
-        private ComboBox TimeZoneCBox;
-        private Label TimeZ;
-        private CheckBox DST;
         private Button ClearB;
+        private Label TimeZL;
+        private Label label2;
+        private Label label3;
+        private DateTimePicker ESTStart;
+        private DateTimePicker ESTend;
     }
 }

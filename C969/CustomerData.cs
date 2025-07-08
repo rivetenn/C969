@@ -20,7 +20,7 @@ namespace C969
         public int? CustId { get; set; }
 
 
-        public CustomerData(string name, string address1, string phone, string city = "", string country = "", string postalCode = "", string address2 = "")
+        public CustomerData(string name, string address1, string phone, string city = "Not Listed", string country = "Not Listed", string postalCode = "Not Listed", string address2 = "Not Listed")
         {
             CheckIfEmpty(new string[] { name, address1, phone });
             phone = CheckP(phone);
@@ -35,7 +35,7 @@ namespace C969
 
 
 
-        private static string CheckP(string phone)
+        public static string CheckP(string phone)
         {
             string digitsOnly = new string(phone.Where(char.IsDigit).ToArray());
 

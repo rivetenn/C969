@@ -278,19 +278,36 @@ namespace C969
             {
                 int crustomer = SqlDataView.SelectedRows[0].Index;
                 CustomerData custId = SQLStuff.DataHolder[crustomer];
+
                 if (custId.CustId.HasValue)
                 {
-                    custId.Name = NameBox.Text.Trim();
-                    custId.Phone = PhoneBox.Text.Trim();
-                    custId.Address = AddressBox.Text.Trim();
-                    custId.Address2 = Addres2Box.Text.Trim();
-                    custId.City = CityBox.Text.Trim();
-                    custId.Country = CountryBox.Text.Trim();
-                    custId.PostalCode = ZipBox.Text.Trim();
+                    try
+                    {
+                        string name = NameBox.Text.Trim();
+                        string phone = PhoneBox.Text.Trim();
+                        string address = AddressBox.Text.Trim();
 
-                    Debug.WriteLine("Working");
-                    SQLStuff.UpdateCustomer(custId);
-                    ClearTextBoxes();
+                        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(address))
+                            throw new Exception("Name, Phone, and Address cannot be empty.");
+
+                        phone = CustomerData.CheckP(phone); 
+
+                        custId.Name = name;
+                        custId.Phone = phone;
+                        custId.Address = address;
+                        custId.Address2 = Addres2Box.Text.Trim();
+                        custId.City = CityBox.Text.Trim();
+                        custId.Country = CountryBox.Text.Trim();
+                        custId.PostalCode = ZipBox.Text.Trim();
+
+                        SQLStuff.UpdateCustomer(custId);
+                        ClearTextBoxes();
+                        SQLStuff.UpdateDataH();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Update failed: " + ex.Message);
+                    }
                 }
             }
         }

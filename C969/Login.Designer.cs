@@ -1,7 +1,12 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Cache;
 using System.Text.Json;
+
+
+
+
 namespace C969
 {
     public class Location
@@ -183,7 +188,6 @@ namespace C969
 
         private void LoginB_Click(object sender, EventArgs e)
         {
-            LoadLocation();
             LVal login = new LVal();
             login.attemptLog(userbox.Text, passwordBox.Text, LanguageBox.SelectedIndex, this);
         }
@@ -194,11 +198,12 @@ namespace C969
             Debug.WriteLine("IP: " + ip);
             var cip = string.Format("https://api.iplocation.net/?ip={0}", ip);
             HttpClient wc = new HttpClient();
-                       
+
             string json = await wc.GetStringAsync(cip);
             Location location = System.Text.Json.JsonSerializer.Deserialize<Location>(json);
+            Debug.WriteLine(location.country_code2);
             CountryN = location.country_name;
-           
+
         }
 
         private async Task<string> GetIP()
@@ -214,10 +219,27 @@ namespace C969
             LoadLocation();
             CountryL.DataBindings.Add("Text", this, "CountryN");
             LanguageBox.Items.AddRange(new object[] { "English", "日本語" });
-            LanguageBox.SelectedIndex = 0; 
+            LanguageBox.SelectedIndex = 0;
             LanguageBox.SelectedIndexChanged += LanguageBox_Changed;
             LanguageBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            LoginForm_Load();
 
         }
+
+
+        private void LoginForm_Load()
+            {
+                string asd = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                Debug.WriteLine("Current Language: " + asd);
+                
+
+                if (asd == "en") 
+                    LanguageBox.SelectedIndex = 0;
+                else
+                    LanguageBox.SelectedIndex = 1;
+
+                LanguageBox_Changed(LanguageBox, EventArgs.Empty);
+            }
+
     }
 }

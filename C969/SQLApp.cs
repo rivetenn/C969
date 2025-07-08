@@ -7,8 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.VisualBasic.ApplicationServices;
 using MySql.Data.MySqlClient;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace C969
 {
@@ -19,6 +21,8 @@ namespace C969
         public static BindingList<AppTools> DataHolder = new BindingList<AppTools>();
 
         public static BindingList<AppTools> Dailyr = new BindingList<AppTools>();
+
+        
 
         public static void UpdateDataH()
         {
@@ -44,9 +48,9 @@ namespace C969
                         string cont = reader.GetString("contact");
                         string type = reader.GetString("type");
                         string url = reader.GetString("url");
-                        DateTime start = reader.GetDateTime("start");
-                        DateTime end = reader.GetDateTime("end");
 
+                        DateTime start = DateTime.SpecifyKind(reader.GetDateTime("start"), DateTimeKind.Utc).ToLocalTime();
+                        DateTime end = DateTime.SpecifyKind(reader.GetDateTime("end"), DateTimeKind.Utc).ToLocalTime();
 
                         DataHolder.Add(new AppTools(custid, userId, name, title, description, location, cont, type, start, end, url, appid));
                     }
@@ -163,17 +167,25 @@ namespace C969
             }
         }
 
-        public static bool CheckForApp(DateTime start, DateTime end)
+        public static bool CheckForApp(DateTime start, DateTime end, int? excludeAppId = null)
         {
-            string query = @"SELECT COUNT(*) FROM appointment 
-                     WHERE (start < @end AND end > @start)";
-            using (var con = new MySqlConnection(MSQL))
+            string query = @"
+                SELECT COUNT(*) FROM appointment 
+                WHERE ((start < @end AND end > @start))";
+
+            if (excludeAppId.HasValue)
+                query += " AND appointmentId != @excludeId";
+
+            using (MySqlConnection con = new MySqlConnection(MSQL))
             {
                 con.Open();
-                using (var cmd = new MySqlCommand(query, con))
+                using (MySqlCommand cmd = new MySqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@start", start);
                     cmd.Parameters.AddWithValue("@end", end);
+
+                    if (excludeAppId.HasValue)
+                        cmd.Parameters.AddWithValue("@excludeId", excludeAppId.Value);
 
                     int count = Convert.ToInt32(cmd.ExecuteScalar());
                     return count > 0;
@@ -220,35 +232,44 @@ namespace C969
                 }
             }
         }
-
         public static void CheckFA()
         {
-            string thisq = @"SELECT start FROM appointment 
-                     WHERE userId = @userId 
-                     AND start BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 15 MINUTE)";
+            string getUserIdQuery = "SELECT userId FROM user WHERE userName = @userName";
+            string getAppointmentsQuery = "SELECT start FROM appointment WHERE userId = @userId";
 
-            string getme = @"SELECT userId FROM user
-                        WHERE userName = @userId";    
-            using (MySqlConnection con = new MySqlConnection(MSQL))
+            using (var con = new MySqlConnection(MSQL))
             {
                 con.Open();
+
                 int userId;
-                using (MySqlCommand cmd = new MySqlCommand(getme, con))
+                using (var cmd = new MySqlCommand(getUserIdQuery, con))
                 {
-                    cmd.Parameters.AddWithValue("@userId", SQLStuff.WhoL);
+                    cmd.Parameters.AddWithValue("@userName", SQLStuff.WhoL);
                     userId = Convert.ToInt32(cmd.ExecuteScalar());
                 }
 
-                using (MySqlCommand cmd = new MySqlCommand(thisq, con))
+                using (var cmd = new MySqlCommand(getAppointmentsQuery, con))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        if (reader.Read())
+                        DateTime nowLocal = DateTime.Now;
+                        DateTime limitLocal = nowLocal.AddMinutes(15);
+
+                        while (reader.Read())
                         {
-                            DateTime start = reader.GetDateTime("start");
-                            MessageBox.Show($"Appointment at {start:t}");
+                            DateTime utcStart = reader.GetDateTime("start");
+                            DateTime localStart = utcStart.ToLocalTime();
+
+                            if (localStart >= nowLocal && localStart <= limitLocal)
+                            {
+                                MessageBox.Show($"You have an appointment at {localStart:t}.",
+                                                "Upcoming Appointment",
+                                                MessageBoxButtons.OK,
+                                                MessageBoxIcon.Information);
+                                break;
+                            }
                         }
                     }
                 }
