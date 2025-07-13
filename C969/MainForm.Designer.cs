@@ -119,6 +119,7 @@
             ManageB.Click += ManageB_Click;
             AppointB.Click += AppointB_Click;
             monthCalendar2.DateChanged += Calendar2_DateChanged;
+
             JustData.DataSource = SQLApp.Dailyr;
             JustData.Columns["appID"].Visible = false;
             JustData.Columns["custid"].Visible = false;
@@ -134,6 +135,8 @@
             JustData.Columns["end"].HeaderText = "End Time";
             SQLApp.CheckFA();
             ReportB.Click += ReportB_Click;
+            initialUp();
+
         }
 
         private void Calendar2_DateChanged(object sender, DateRangeEventArgs e)
@@ -142,7 +145,11 @@
             DateTime end = monthCalendar2.SelectionEnd;
             SQLApp.DateApps(start, end);
         }
-
+        private void initialUp()
+        {
+            SQLApp.DateApps(DateTime.Today, DateTime.Today.AddDays(1));
+            JustData.Refresh();
+        }
 
         private Button ManageB;
         private Button AppointB;

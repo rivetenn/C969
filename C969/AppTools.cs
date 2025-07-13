@@ -23,20 +23,25 @@ namespace C969
         public DateTime start { get; set; }
         public DateTime end { get; set; }
 
-        public AppTools(int custid, int userid, string name, string title, string description, string location, string cont, string type,  DateTime start, DateTime end,string url = "not needed", int appID = 0)
+        public AppTools(int custid, int userid, string name, string title, string description, string location, string cont, string type,  DateTime start, DateTime end,string url, int appID = 0)
         {
             this.appID = appID;
             this.custid = custid;
             this.userid = userid;
             this.name = name;
-            this.title = title;
-            this.description = description;
-            this.location = location;
-            this.cont = cont;
-            this.type = type;
-            this.url = url;
+            this.title = Isempty(title);
+            this.description = Isempty(description);
+            this.location = Isempty(location);
+            this.cont = Isempty(cont);
+            this.type = Isempty(type);
+            this.url = Isempty(url);
             this.start = start;
             this.end = end;
+        }
+
+        public string Isempty(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? "N/A" : value.Trim();
         }
 
     }

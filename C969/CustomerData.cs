@@ -22,26 +22,35 @@ namespace C969
 
         public CustomerData(string name, string address1, string phone, string city, string country, string postalCode, string address2)
         {
+            CheckIfEmpty(new string[] { name, address1, phone });
 
-                CheckIfEmpty(new string[] { name, address1, phone, city, country, postalCode });
-                phone = CheckP(phone);
-                Name = name.Trim();
-                Address = address1.Trim();
-                Phone = phone.Trim();
-                City = city.Trim();
-                Country = country.Trim();
-                PostalCode = postalCode.Trim();
-                Address2 = address2.Trim();
+            phone = CheckP(phone);
 
-
-
-
+            Name = name.Trim();
+            Address = address1.Trim();
+            Phone = phone.Trim();
+            City = Isempty(city);
+            Country = Isempty(country);
+            PostalCode = Isempty(postalCode);
+            Address2 = Isempty(address2);
         }
 
-
+        public string Isempty(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? "N/A" : value.Trim();
+        }
+        
 
         public static string CheckP(string phone)
         {
+            foreach (char x in phone)
+            {
+                if (!char.IsDigit(x) && x != '-')
+                {
+                    throw new ArgumentException("Invalid Phone Number");
+                }
+            }
+
             string digitsOnly = new string(phone.Where(char.IsDigit).ToArray());
 
             if (digitsOnly.Length == 7)
@@ -58,7 +67,7 @@ namespace C969
             }
             else
             {
-                throw new Exception("Invalid Phone Number");
+                throw new Exception("Phone Number not valid. It must be 7, 10 or 11 digits.");
             }
         }
         private static void CheckIfEmpty(string[] values)

@@ -59,6 +59,8 @@ namespace C969
             label3 = new Label();
             ESTStart = new DateTimePicker();
             ESTend = new DateTimePicker();
+            UrlB = new TextBox();
+            label4 = new Label();
             ((System.ComponentModel.ISupportInitialize)DataApp).BeginInit();
             SuspendLayout();
             // 
@@ -306,11 +308,29 @@ namespace C969
             ESTend.Size = new Size(106, 23);
             ESTend.TabIndex = 32;
             // 
+            // UrlB
+            // 
+            UrlB.Location = new Point(388, 84);
+            UrlB.Name = "UrlB";
+            UrlB.Size = new Size(169, 23);
+            UrlB.TabIndex = 34;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(332, 84);
+            label4.Name = "label4";
+            label4.Size = new Size(31, 15);
+            label4.TabIndex = 33;
+            label4.Text = "URL:";
+            // 
             // Appointments
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(744, 699);
+            Controls.Add(UrlB);
+            Controls.Add(label4);
             Controls.Add(ESTend);
             Controls.Add(ESTStart);
             Controls.Add(label3);
@@ -355,7 +375,7 @@ namespace C969
 
             TimeManagement(-1);
             var app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text,
-                LBox.Text, ContactBox.Text, TypeBox.Text, start, end);
+                LBox.Text, ContactBox.Text, TypeBox.Text, start, end, UrlB.Text);
 
             SQLApp.AddAppointment(app);
             SQLApp.UpdateDataH();
@@ -374,7 +394,7 @@ namespace C969
             TimeManagement(appId);
 
             var app = new AppTools(GetUserID(ClientBox.Text), GetselfID(), ClientBox.Text, TitleBox.Text, DescBox.Text,
-                LBox.Text, ContactBox.Text, TypeBox.Text, start, end, appID: appId);
+                LBox.Text, ContactBox.Text, TypeBox.Text, start, end, UrlB.Text, appID: appId);
 
             SQLApp.UpdateAppointment(app);
             SQLApp.UpdateDataH();
@@ -502,6 +522,7 @@ namespace C969
                 DateO.Value = selected.start.Date;
                 TimeStart.Value = selected.start;
                 TimeEnd.Value = selected.end;
+                UrlB.Text = selected.url;
             }
         }
 
@@ -551,5 +572,7 @@ namespace C969
         private Label label3;
         private DateTimePicker ESTStart;
         private DateTimePicker ESTend;
+        private Label label4;
+        private TextBox UrlB;
     }
 }
